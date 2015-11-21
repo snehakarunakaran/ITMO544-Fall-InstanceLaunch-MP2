@@ -30,9 +30,9 @@ aws rds wait db-instance-available --db-instance-identifier $DBINSTANCEIDENTIFIE
 
 aws rds create-db-instance-read-replica --db-instance-identifier mp1SKread-replica --source-db-instance-identifier $DBINSTANCEIDENTIFIER
 
-mapfile -t instanceARR < <(aws ec2 run-instances --image-id $1 --count $2 --instance-type $3 --key-name $6 --security-group-id $4 --subnet-id $5 --associate-public-ip-address --iam-instance-profile Name=$7 --user-data file://../ITMO544-Fall-EnvSetup-MP1/install-env.sh --output table | grep InstanceId | sed "s/|//g" | tr -d ' ' | sed "s/InstanceId//g")
+mapfile -t instanceARR < <(aws ec2 run-instances --image-id $1 --count $2 --instance-type $3 --key-name $6 --security-group-id $4 --subnet-id $5 --associate-public-ip-address --iam-instance-profile Name=$7 --user-data file://../ITMO544-Fall-EnvSetup-MP2/install-env.sh --output table | grep InstanceId | sed "s/|//g" | tr -d ' ' | sed "s/InstanceId//g")
 
-#aws ec2 run-instances --image-id ami-d05e75b8 --count 2 --instance-type t2.micro --key-name ITMO544-Fall2015-VirtualBox --security-group-id sg-18b4bc7f --subnet-id subnet-5e540975 --associate-public-ip-address --user-data file://../ITMO544-Fall-EnvSetup-MP1/install-env.sh --debug
+#aws ec2 run-instances --image-id ami-d05e75b8 --count 2 --instance-type t2.micro --key-name ITMO544-Fall2015-VirtualBox --security-group-id sg-18b4bc7f --subnet-id subnet-5e540975 --associate-public-ip-address --user-data file://../ITMO544-Fall-EnvSetup-MP2/install-env.sh --debug
 echo ${instanceARR[@]}
 
 aws ec2 wait instance-running --instance-ids ${instanceARR[@]}
@@ -62,7 +62,7 @@ aws elb configure-health-check --load-balancer-name $ELBNAME --health-check Targ
 
 LAUNCHCONFIG='itmo544launchconfig'
 
-aws autoscaling create-launch-configuration --launch-configuration-name $LAUNCHCONFIG --image-id $1 --key-name $6 --security-groups $4 --instance-type $3 --user-data file://../ITMO544-Fall-EnvSetup-MP1/install-env.sh --iam-instance-profile $7
+aws autoscaling create-launch-configuration --launch-configuration-name $LAUNCHCONFIG --image-id $1 --key-name $6 --security-groups $4 --instance-type $3 --user-data file://../ITMO544-Fall-EnvSetup-MP2/install-env.sh --iam-instance-profile $7
 
 #Autoscaling group
 
