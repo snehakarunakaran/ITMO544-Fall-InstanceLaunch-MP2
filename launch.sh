@@ -86,10 +86,10 @@ aws cloudwatch put-metric-alarm --alarm-name ReduceCapacity --alarm-description 
 
 # SNS For ImageUpload
 
-#SNSIMAGETOPICNAME=ImageTopicSK
+SNSIMAGETOPICNAME=ImageTopicSK
 
-#SNSIMAGEARN=(`aws sns create-topic --name $SNSIMAGETOPICNAME`)
-#aws sns set-topic-attributes --topic-arn $SNSIMAGEARN --attribute-name DisplayName --attribute-value $SNSIMAGETOPICNAME 
+SNSIMAGEARN=(`aws sns create-topic --name $SNSIMAGETOPICNAME`)
+aws sns set-topic-attributes --topic-arn $SNSIMAGEARN --attribute-name DisplayName --attribute-value $SNSIMAGETOPICNAME 
 
 #Subcribe
 
