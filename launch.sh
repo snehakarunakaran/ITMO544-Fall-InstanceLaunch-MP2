@@ -1,5 +1,5 @@
 #!/bin/bash
-#./cleanup.sh
+./cleanup.sh
 
 
 
@@ -54,9 +54,32 @@ aws elb register-instances-with-load-balancer --load-balancer-name $ELBNAME --in
 
 aws elb configure-health-check --load-balancer-name $ELBNAME --health-check Target=HTTP:80/index.html,Interval=30,UnhealthyThreshold=2,HealthyThreshold=2,Timeout=3
 
-#echo -e "\n waiting for an extra 3 minutes before opening elb in browser"
-#for i in {0..180}; do echo -ne '.'; sleep 1;done
-#echo "\n"
+echo -e "\n waiting for an extra 3 minutes before opening elb in browser"
+for i in {0..180}; do echo -ne '.'; sleep 1;done
+echo "\n"
+
+# SNS
+# SNS For ImageUpload
+
+SNSIMAGETOPICNAME=ImageTopicSK
+
+SNSIMAGEARN=(`aws sns create-topic --name $SNSIMAGETOPICNAME`)
+aws sns set-topic-attributes --topic-arn $SNSIMAGEARN --attribute-name DisplayName --attribute-value $SNSIMAGETOPICNAME 
+
+
+# SNS For Cloud MetricAlarm
+
+SNSCLOUDMETRICNAME=CloudMetricTopicSK
+
+SNSCLOUDMETRICSARN=(`aws sns create-topic --name $SNSCLOUDMETRICNAME`)
+aws sns set-topic-attributes --topic-arn $SNSCLOUDMETRICSARN --attribute-name DisplayName --attribute-value $SNSCLOUDMETRICNAME
+
+#Subcribe
+
+EMAILID=sneha.karunakaran@gmail.com
+
+aws sns subscribe --topic-arn $SNSCLOUDMETRICSARN --protocol email --notification-endpoint $EMAILID
+
 
 #Launch Config
 
@@ -80,29 +103,13 @@ SCALINGDECREASE=(`aws autoscaling put-scaling-policy --auto-scaling-group-name $
 
 #Cloud Watch Metric
 
-aws cloudwatch put-metric-alarm --alarm-name AddCapacity --alarm-description "Alarm when CPU exceeds 30 percent" --metric-name CPUUtilization --namespace AWS/EC2 --statistic Average --period 60 --threshold 30 --comparison-operator GreaterThanOrEqualToThreshold --evaluation-periods 1 --unit Percent --dimensions "Name=AutoScalingGroupName,Value=$AUTOSCALINGNAME" --alarm-actions $SCALINGINCREASE
+aws cloudwatch put-metric-alarm --alarm-name AddCapacity --alarm-description "Alarm when CPU exceeds 30 percent" --metric-name CPUUtilization --namespace AWS/EC2 --statistic Average --period 60 --threshold 30 --comparison-operator GreaterThanOrEqualToThreshold --evaluation-periods 1 --unit Percent --dimensions "Name=AutoScalingGroupName,Value=$AUTOSCALINGNAME" --alarm-actions $SCALINGINCREASE $SNSCLOUDMETRICSARN
 
-aws cloudwatch put-metric-alarm --alarm-name ReduceCapacity --alarm-description "Alarm when CPU falls below 10 percent" --metric-name CPUUtilization --namespace AWS/EC2 --statistic Average --period 60 --threshold 10 --comparison-operator LessThanOrEqualToThreshold --evaluation-periods 1 --unit Percent --dimensions "Name=AutoScalingGroupName,Value=$AUTOSCALINGNAME" --alarm-actions $SCALINGDECREASE
-
-# SNS For ImageUpload
-
-SNSIMAGETOPICNAME=ImageTopicSK
-
-SNSIMAGEARN=(`aws sns create-topic --name $SNSIMAGETOPICNAME`)
-aws sns set-topic-attributes --topic-arn $SNSIMAGEARN --attribute-name DisplayName --attribute-value $SNSIMAGETOPICNAME 
-
-#Subcribe
-
-#EMAILID=sneha.karunakaran@gmail.com
-
-#aws sns subscribe --topic-arn $SNSIMAGEARN --protocol email --notification-endpoint $EMAILID
+aws cloudwatch put-metric-alarm --alarm-name ReduceCapacity --alarm-description "Alarm when CPU falls below 10 percent" --metric-name CPUUtilization --namespace AWS/EC2 --statistic Average --period 60 --threshold 10 --comparison-operator LessThanOrEqualToThreshold --evaluation-periods 1 --unit Percent --dimensions "Name=AutoScalingGroupName,Value=$AUTOSCALINGNAME" --alarm-actions $SCALINGDECREASE $SNSCLOUDMETRICSARN
 
 
-# SNS For Cloud MetricAlarm
 
-#SNSCLOUDMETRICNAME=CloudMetricTopicSK
 
-#SNSCLOUDMETRICSARN=(`aws sns create-topic --name $SNSCLOUDMETRICNAME`)
-#aws sns set-topic-attributes --topic-arn $SNSCLOUDMETRICSARN --attribute-name DisplayName --attribute-value $SNSCLOUDMETRICNAME
+
 
 
